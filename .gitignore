@@ -1,0 +1,6 @@
+node_modules/
+.env
+*.log
+serviceAccountKey.json
+serviceAccount.base64.txt
+/qrs
