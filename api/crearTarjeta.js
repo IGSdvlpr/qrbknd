@@ -49,7 +49,7 @@ export default async function crearTarjeta(req, res) {
     });
 
     // Borrar archivo temporal
-    //fs.unlink(qrFilePath, () => {});
+    fs.unlink(qrFilePath, () => {});
   } catch (error) {
     console.error(`[crearTarjeta] ${error.name}: ${error.message}`);
     res.status(500).json({
