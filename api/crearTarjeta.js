@@ -50,7 +50,7 @@ export default async function crearTarjeta(req, res) {
     console.error(`[crearTarjeta] ${error.name}: ${error.message}`);
     res.status(500).json({
       error: "Error interno del servidor al crear la tarjeta",
-      detalles: process.env.NODE_ENV === "development" ? error.message : undefined,
+      detalles: process.env.NODE_ENV === "production" ? error.message : undefined,
     });
   }
 }
