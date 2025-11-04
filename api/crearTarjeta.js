@@ -34,22 +34,18 @@ export default async function crearTarjeta(req, res) {
     const outputDir = path.resolve(__dirname, "../qrs");
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-    const qrFilePath = path.join(outputDir, `${idTarjeta}.png`);
-
-    await QRCode.toFile(qrFilePath, qrData, {
+    const qrBase64 = await QRCode.toDataURL(qrData, {
       width: 300,
       margin: 2,
       color: { dark: "#000000", light: "#ffffff" },
     });
 
-    const qrBase64 = fs.readFileSync(qrFilePath, { encoding: "base64" });
     res.json({
       tarjetaId: idTarjeta,
-      qr: `data:image/png;base64,${qrBase64}`,
+      qr: qrBase64, // ya incluye "data:image/png;base64,..."
     });
 
-    // Borrar archivo temporal
-    fs.unlink(qrFilePath, () => {});
+
   } catch (error) {
     console.error(`[crearTarjeta] ${error.name}: ${error.message}`);
     res.status(500).json({

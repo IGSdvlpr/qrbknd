@@ -1,67 +1,73 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import helmet from "helmet"; // 🔒 Seguridad HTTP
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Endpoints
 import crearTarjeta from "./api/crearTarjeta.js";
 import consultarTarjeta from "./api/consultarTarjeta.js";
 import registrarViaje from "./api/registrarViaje.js";
 import verViajes from "./api/verViajes.js";
 
-// Configuración base
+// Configuración de variables de entorno
 dotenv.config();
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🧩 Middleware de seguridad y CORS
-app.use(helmet({
-  crossOriginResourcePolicy: false, // permite servir imágenes QR sin bloqueo
-}));
+// Seguridad
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // necesario si sirves archivos
+  })
+);
 
-// 🔐 Configuración de CORS flexible según entorno
-const allowedOrigins = process.env.CORS_ORIGINS?.split(",") || ["http://localhost:3000"];
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST"],
-  credentials: true,
-}));
+// Configuración dinámica de CORS
+const allowedOrigins =
+  process.env.CORS_ORIGINS?.split(",") || [
+    "http://localhost:3000",
+    "http://192.168.1.19:3000",
+  ];
 
-// 📦 Middleware
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
+// Middleware para parsear JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🖼️ Servir imágenes y archivos estáticos
+// Rutas de archivos estáticos (no persistentes en Vercel)
 app.use("/qrs", express.static(path.join(__dirname, "qrs")));
 app.use("/public", express.static(path.join(__dirname, "public")));
 
-// 🧭 Endpoints privados (app del conductor)
+// Endpoints principales
 app.post("/api/crearTarjeta", crearTarjeta);
 app.get("/api/consultarTarjeta", consultarTarjeta);
 app.post("/api/registrarViaje", registrarViaje);
-
-// 🌍 Endpoint público (para escaneo QR)
 app.get("/tarjeta/:id", verViajes);
 
-// 🚨 Manejo global de errores (evita que el servidor caiga)
+// Manejo global de errores
 app.use((err, req, res, next) => {
   console.error("🔥 Error interno:", err);
   res.status(500).json({ error: "Error interno del servidor" });
 });
 
-// ⚙️ Puerto y entorno
+// --------------------
+// 🚀 Modo desarrollo
+// --------------------
 const PORT = process.env.PORT || 3000;
-const ENV = process.env.NODE_ENV || "development";
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () =>
+    console.log(`✅ Servidor local corriendo en http://localhost:${PORT}`)
+  );
+}
 
-// 🚀 Inicio del servidor
-app.listen(PORT, () => {
-  console.log(`✅ Servidor (${ENV}) corriendo en http://localhost:${PORT}`);
-  if (ENV === "production") {
-    console.log("🔒 Modo producción: Helmet y CORS activos");
-  } else {
-    console.log("⚙️ Modo desarrollo: puedes probar desde Postman o Android app");
-  }
-});
+// Exportar para Vercel
+export default app;
