@@ -9,11 +9,10 @@ export default async function verViajes(req, res) {
     return res.status(400).send("Falta el parámetro ID de la tarjeta.");
   }
 
-  // URL base según entorno
   const urlBase =
-  process.env.NODE_ENV === "production"
-    ? process.env.PROD_URL_BASE
-    : process.env.DEV_URL_BASE;
+    process.env.NODE_ENV === "production"
+      ? process.env.PROD_URL_BASE
+      : process.env.DEV_URL_BASE;
 
   try {
     const docRef = admin.firestore().collection("tarjetas").doc(id);
@@ -24,14 +23,14 @@ export default async function verViajes(req, res) {
     }
 
     const data = docSnap.data();
-    let viajes = data.viajes || 0;
-    let viajesGratis = data.viajesGratis || 0;
-    let ultimoGratis = data.ultimoGratis || null;
+    const viajes = data.viajes || 0;
+    const viajesGratis = data.viajesGratis || 0;
+    const ultimoGratis = data.ultimoGratis || null;
 
     const ahora = Date.now();
     let mensaje = "";
 
-    // Viaje gratis cada 8 viajes
+    // 🎁 Descuento cada 8 viajes
     if (viajes % 8 === 0 && viajes !== 0) {
       if (ultimoGratis && ahora - ultimoGratis < 15 * 60 * 1000) {
         mensaje = `<div class="mensaje gratis">🎉 ¡Este viaje tiene un descuento de $2000! 🎉</div>`;
@@ -52,17 +51,18 @@ export default async function verViajes(req, res) {
       mensaje = `<div class="mensaje proximo">✨ ¡Tu próximo viaje tendrá un descuento de $2000! ✨</div>`;
     }
 
-    // Cargar plantilla HTML
+    // 📄 Cargar plantilla HTML
     const templatePath = path.resolve("api/templates/tarjeta.html");
     let html = fs.readFileSync(templatePath, "utf8");
 
-    // Reemplazar variables en la plantilla
+    // 🧩 Reemplazar variables dinámicas
     html = html
       .replace("{{viajes}}", viajes)
       .replace("{{mensaje}}", mensaje)
       .replace("{{viajesGratis}}", viajesGratis)
-      .replace("{{logo}}", `${urlBase}/public/logo1.png`); // <- ruta absoluta para logo
+      .replace("{{logo}}", `${urlBase}/logo1.png`); // Ajuste: logo accesible desde raíz pública
 
+    res.setHeader("Content-Type", "text/html");
     res.send(html);
   } catch (error) {
     console.error("Error en verViajes:", error);

@@ -51,7 +51,8 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.post("/api/crearTarjeta", crearTarjeta);
 app.get("/api/consultarTarjeta", consultarTarjeta);
 app.post("/api/registrarViaje", registrarViaje);
-app.get("/tarjeta/:id", verViajes);
+//app.get("/tarjeta/:id", verViajes);
+app.get("/t/:id", verViajes)
 
 // Manejo global de errores
 app.use((err, req, res, next) => {
