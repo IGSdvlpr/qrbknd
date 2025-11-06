@@ -14,8 +14,19 @@ export default async function registrarViaje(req, res) {
     const nuevosViajes = data.viajes + 1;
     const viajeGratis = nuevosViajes % 8 === 0;
 
-    await docRef.update({ viajes: nuevosViajes });
+    // 🔹 Si llega a 8 viajes, marcamos el tiempo de expiración del contador
+    if (viajeGratis) {
+      const reinicioEn = Date.now() + 7 * 60 * 1000; // 7 minutos desde ahora
 
+      await docRef.update({
+        viajes: nuevosViajes,
+        reinicioProgramado: reinicioEn, // Guardamos cuándo debe reiniciarse
+      });
+    } else {
+      await docRef.update({ viajes: nuevosViajes });
+    }
+
+    // 🔹 Respuesta final (sin alterar tu estructura)
     res.json({
       tarjetaId,
       viajes: nuevosViajes,

@@ -9,6 +9,7 @@ export default async function verViajes(req, res) {
     return res.status(400).send("Falta el parámetro ID de la tarjeta.");
   }
 
+  // 🔹 Determinar URL base según entorno
   const urlBase =
     process.env.NODE_ENV === "production"
       ? process.env.PROD_URL_BASE
@@ -23,14 +24,25 @@ export default async function verViajes(req, res) {
     }
 
     const data = docSnap.data();
-    const viajes = data.viajes || 0;
-    const viajesGratis = data.viajesGratis || 0;
-    const ultimoGratis = data.ultimoGratis || null;
-
+    let viajes = data.viajes || 0;
+    let viajesGratis = data.viajesGratis || 0;
+    let ultimoGratis = data.ultimoGratis || null;
     const ahora = Date.now();
+
+    // ✅ Verificación automática del reinicio de viajes
+    // Si ya pasó el tiempo programado, reiniciamos el contador
+    if (data.reinicioProgramado && ahora >= data.reinicioProgramado) {
+      await docRef.update({
+        viajes: 0,
+        reinicioProgramado: admin.firestore.FieldValue.delete(), // eliminar el campo
+      });
+      viajes = 0; // actualizamos la variable local para reflejar el cambio
+      console.log(`🔄 Contador reiniciado automáticamente para tarjeta ${id}`);
+    }
+
+    // 🔹 Lógica de mensajes de viaje gratis (la mantenemos igual)
     let mensaje = "";
 
-    // 🎁 Descuento cada 8 viajes
     if (viajes % 8 === 0 && viajes !== 0) {
       if (ultimoGratis && ahora - ultimoGratis < 15 * 60 * 1000) {
         mensaje = `<div class="mensaje gratis">🎉 ¡Este viaje tiene un descuento de $2000! 🎉</div>`;
@@ -41,28 +53,22 @@ export default async function verViajes(req, res) {
         });
 
         mensaje = `<div class="mensaje gratis">🎉 ¡Este viaje tiene un descuento de $2000! 🎉</div>`;
-        // Reinicio del contador después de 15 minutos
-        setTimeout(async () => {
-          await docRef.update({ viajes: 0 });
-          console.log(`🔄 Contador reiniciado para tarjeta ${id}`);
-        }, 15 * 60 * 1000);
       }
     } else if (viajes % 8 === 7) {
       mensaje = `<div class="mensaje proximo">✨ ¡Tu próximo viaje tendrá un descuento de $2000! ✨</div>`;
     }
 
-    // 📄 Cargar plantilla HTML
+    // 🔹 Cargar plantilla HTML
     const templatePath = path.resolve("api/templates/tarjeta.html");
     let html = fs.readFileSync(templatePath, "utf8");
 
-    // 🧩 Reemplazar variables dinámicas
+    // 🔹 Reemplazar variables en la plantilla
     html = html
       .replace("{{viajes}}", viajes)
       .replace("{{mensaje}}", mensaje)
       .replace("{{viajesGratis}}", viajesGratis)
-      .replace("{{logo}}", `${urlBase}/logo1.png`); // Ajuste: logo accesible desde raíz pública
+      .replace("{{logo}}", `${urlBase}/public/logo1.png`); // ruta absoluta del logo
 
-    res.setHeader("Content-Type", "text/html");
     res.send(html);
   } catch (error) {
     console.error("Error en verViajes:", error);
