@@ -2,8 +2,7 @@ import QRCode from "qrcode";
 import crypto from "crypto";
 import { getAdmin } from "../lib/firebaseAdmin.js";
 
-const admin = getAdmin();
-const db = admin.firestore();
+
 
 const urlBase =
   process.env.NODE_ENV === "production"
@@ -12,6 +11,9 @@ const urlBase =
 
 export default async function crearTarjeta(req, res) {
   try {
+
+    const admin = getAdmin();
+    const db = admin.firestore();
     const idTarjeta = `TARJ-${Math.random()
       .toString(36)
       .substring(2, 10)
