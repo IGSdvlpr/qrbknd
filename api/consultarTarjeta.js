@@ -1,4 +1,6 @@
-import admin from "../lib/firebaseAdmin.js";
+import { getAdmin } from "../lib/firebaseAdmin.js";
+
+const admin = getAdmin();
 const db = admin.firestore();
 
 export default async function consultarTarjeta(req, res) {

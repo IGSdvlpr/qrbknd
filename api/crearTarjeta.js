@@ -1,7 +1,8 @@
-import admin from "../lib/firebaseAdmin.js";
 import QRCode from "qrcode";
 import crypto from "crypto";
+import { getAdmin } from "../lib/firebaseAdmin.js";
 
+const admin = getAdmin();
 const db = admin.firestore();
 
 const urlBase =
