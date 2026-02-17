@@ -2,14 +2,12 @@ import fs from "fs";
 import path from "path";
 import { getAdmin } from "../lib/firebaseAdmin.js";
 
-const admin = getAdmin();
-const db = admin.firestore();
-
-
-
 
 
 export default async function verViajes(req, res) {
+  const admin = getAdmin();
+  const db = admin.firestore();
+  
   const { id } = req.params;
 
   if (!id) {

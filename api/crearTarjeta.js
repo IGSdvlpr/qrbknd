@@ -2,8 +2,6 @@ import QRCode from "qrcode";
 import crypto from "crypto";
 import { getAdmin } from "../lib/firebaseAdmin.js";
 
-
-
 const urlBase =
   process.env.NODE_ENV === "production"
     ? process.env.PROD_URL_BASE

@@ -1,10 +1,11 @@
 import { getAdmin } from "../lib/firebaseAdmin.js";
 
-const admin = getAdmin();
-const db = admin.firestore();
+
 
 export default async function registrarViaje(req, res) {
   try {
+    const admin = getAdmin();
+    const db = admin.firestore();
     const { tarjetaId } = req.body;
     if (!tarjetaId) return res.status(400).json({ error: "Falta tarjetaId" });
 

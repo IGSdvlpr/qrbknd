@@ -1,10 +1,11 @@
 import { getAdmin } from "../lib/firebaseAdmin.js";
 
-const admin = getAdmin();
-const db = admin.firestore();
+
 
 export default async function consultarTarjeta(req, res) {
   try {
+    const admin = getAdmin();
+    const db = admin.firestore();
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: "Falta id de la tarjeta" });
 
